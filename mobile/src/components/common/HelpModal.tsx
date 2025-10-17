@@ -18,12 +18,12 @@ interface HelpModalProps {
   content: HelpContent[];
 }
 
-interface HelpContent {
+export interface HelpContent {
   type: 'text' | 'list' | 'colorCode';
   content: string | string[] | ColorCodeItem[];
 }
 
-interface ColorCodeItem {
+export interface ColorCodeItem {
   color: string;
   label: string;
   description: string;

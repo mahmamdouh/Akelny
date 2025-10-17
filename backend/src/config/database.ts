@@ -1,4 +1,12 @@
 import { Pool, PoolConfig } from 'pg';
+import { poolConfig } from '../utils/queryOptimization';
+import { logger } from '../utils/logger';
+
+// Get environment-specific pool configuration
+const environment = process.env.NODE_ENV || 'development';
+const envPoolConfig = environment === 'production' 
+  ? poolConfig.production 
+  : poolConfig.development;
 
 const config: PoolConfig = {
   host: process.env.DB_HOST || 'localhost',
@@ -6,36 +14,81 @@ const config: PoolConfig = {
   database: process.env.DB_NAME || 'akelny_dev',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || '',
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  ...envPoolConfig
 };
 
 export const pool = new Pool(config);
 
-// Test database connection
+// Test database connection with detailed logging
 export const testConnection = async (): Promise<boolean> => {
   try {
+    const start = Date.now();
     const client = await pool.connect();
-    await client.query('SELECT NOW()');
+    const result = await client.query('SELECT NOW(), version()');
+    const duration = Date.now() - start;
+    
     client.release();
-    console.log('✅ Database connection established');
+    
+    logger.info('Database connection test successful', {
+      duration: `${duration}ms`,
+      timestamp: result.rows[0].now,
+      version: result.rows[0].version.split(' ')[0], // Just PostgreSQL version
+      poolConfig: {
+        max: config.max,
+        min: config.min,
+        idleTimeout: config.idleTimeoutMillis,
+        connectionTimeout: config.connectionTimeoutMillis
+      }
+    });
+    
     return true;
   } catch (error) {
-    console.error('❌ Database connection failed:', error);
+    logger.error('Database connection test failed', { 
+      error: error instanceof Error ? error.message : error,
+      config: {
+        host: config.host,
+        port: config.port,
+        database: config.database,
+        user: config.user,
+        ssl: !!config.ssl
+      }
+    });
     return false;
   }
 };
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('🔄 Closing database connections...');
-  await pool.end();
-  process.exit(0);
+// Pool event handlers
+pool.on('connect', (client) => {
+  logger.debug('New database client connected', {
+    totalCount: pool.totalCount,
+    idleCount: pool.idleCount,
+    waitingCount: pool.waitingCount
+  });
 });
 
-process.on('SIGTERM', async () => {
-  console.log('🔄 Closing database connections...');
-  await pool.end();
-  process.exit(0);
+pool.on('error', (err, client) => {
+  logger.error('Database pool error', { error: err.message });
 });
+
+pool.on('remove', (client) => {
+  logger.debug('Database client removed from pool', {
+    totalCount: pool.totalCount,
+    idleCount: pool.idleCount,
+    waitingCount: pool.waitingCount
+  });
+});
+
+// Graceful shutdown
+const gracefulShutdown = async (signal: string) => {
+  logger.info(`Received ${signal}, closing database connections...`);
+  try {
+    await pool.end();
+    logger.info('Database connections closed successfully');
+  } catch (error) {
+    logger.error('Error closing database connections', { error });
+  }
+};
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

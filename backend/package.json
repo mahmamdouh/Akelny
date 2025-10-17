@@ -15,7 +15,15 @@
     "migrate:down": "node-pg-migrate down",
     "migrate:create": "node-pg-migrate create",
     "seed": "ts-node src/seeds/index.ts",
-    "db:reset": "npm run migrate:down && npm run migrate:up && npm run seed"
+    "db:reset": "npm run migrate:down && npm run migrate:up && npm run seed",
+    "test:db-connection": "ts-node -e \"import('./src/config/database').then(db => db.testConnection().then(r => process.exit(r ? 0 : 1)))\"",
+    "test:redis-connection": "ts-node -e \"import('./src/config/redis').then(r => r.connectRedis().then(c => process.exit(c ? 0 : 1)))\"",
+    "production:setup": "chmod +x scripts/production-setup.sh && ./scripts/production-setup.sh",
+    "production:start": "NODE_ENV=production node dist/index.js",
+    "logs:tail": "tail -f logs/$(date +%Y-%m-%d).log",
+    "logs:error": "grep -i error logs/$(date +%Y-%m-%d).log",
+    "health": "curl -s http://localhost:3000/health | jq",
+    "metrics": "curl -s http://localhost:3000/metrics"
   },
   "dependencies": {
     "express": "^4.18.2",

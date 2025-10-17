@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { SuggestionsController } from '../controllers/suggestions';
 import { authenticateToken } from '../middleware/auth';
+import { cacheConfigs } from '../middleware/cache';
 
 const router = Router();
 
@@ -19,7 +20,7 @@ router.use(authenticateToken);
  * @query {string} [offset=0] - Pagination offset
  * @access Private
  */
-router.get('/', SuggestionsController.getSuggestions);
+router.get('/', cacheConfigs.userSpecific, SuggestionsController.getSuggestions);
 
 /**
  * @route POST /api/suggestions/filter-by-pantry
@@ -42,7 +43,7 @@ router.post('/filter-by-pantry', SuggestionsController.filterByPantry);
  * @query {string} [favoriteBoost=true] - Boost favorite meals in selection
  * @access Private
  */
-router.get('/random', SuggestionsController.getRandomPicker);
+router.get('/random', cacheConfigs.dynamic, SuggestionsController.getRandomPicker);
 
 /**
  * @route DELETE /api/suggestions/cache
@@ -58,6 +59,6 @@ router.delete('/cache', SuggestionsController.clearCache);
  * @desc Useful for debugging and analytics
  * @access Private
  */
-router.get('/stats', SuggestionsController.getStats);
+router.get('/stats', cacheConfigs.userSpecific, SuggestionsController.getStats);
 
 export default router;

@@ -12,6 +12,15 @@ DOMAIN="akelny.nabd-co.com"
 
 echo "🚀 Starting Akelny deployment for $ENVIRONMENT environment..."
 
+# Check and resolve port conflicts
+echo "🔍 Checking for port conflicts..."
+if [ -f "scripts/fix-port-conflicts.sh" ]; then
+    chmod +x scripts/fix-port-conflicts.sh
+    ./scripts/fix-port-conflicts.sh
+else
+    echo "⚠️  Port conflict resolution script not found, continuing..."
+fi
+
 # Check if Docker and Docker Compose are installed
 if ! command -v docker &> /dev/null; then
     echo "❌ Docker is not installed. Please install Docker first."
@@ -90,11 +99,13 @@ docker-compose up -d
 echo "🏥 Performing health checks..."
 sleep 30
 
-# Check backend health
-if curl -f http://localhost:3000/health > /dev/null 2>&1; then
+# Check backend health (using new port)
+if curl -f http://localhost:3001/health > /dev/null 2>&1; then
     echo "✅ Backend is healthy"
 else
     echo "❌ Backend health check failed"
+    echo "Trying alternative health check..."
+    docker-compose exec backend curl -f http://localhost:3000/health || echo "Internal health check also failed"
     docker-compose logs backend
 fi
 
@@ -118,7 +129,10 @@ echo "📋 Service Information:"
 echo "   🌐 Domain: https://$DOMAIN"
 echo "   🔧 API: https://$DOMAIN/api"
 echo "   🏥 Health: https://$DOMAIN/health"
-echo "   📊 Monitoring: http://localhost:3001 (if enabled)"
+echo "   � Direct iAPI: http://localhost:3001/api"
+echo "   🏥 Direct Health: http://localhost:3001/health"
+echo "   📊 Prometheus: http://localhost:9091 (if enabled)"
+echo "   📈 Grafana: http://localhost:3002 (if enabled)"
 echo ""
 echo "📝 Useful Commands:"
 echo "   View logs: docker-compose logs -f [service]"
