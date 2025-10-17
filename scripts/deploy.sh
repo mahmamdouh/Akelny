@@ -62,8 +62,8 @@ sleep 30
 
 # Run database migrations and seeding
 echo "🗄️  Running database migrations..."
-docker-compose exec -T postgres psql -U akelny_user -d akelny -f /docker-entrypoint-initdb.d/1703000001_create-core-tables.js || true
-docker-compose exec -T postgres psql -U akelny_user -d akelny -f /docker-entrypoint-initdb.d/1703000002_create-indexes.js || true
+docker-compose exec -T postgres psql -U akelny_user -d akelny -f /docker-entrypoint-initdb.d/001_create_core_tables.sql || true
+docker-compose exec -T postgres psql -U akelny_user -d akelny -f /docker-entrypoint-initdb.d/002_create_indexes.sql || true
 
 # Build and start backend
 echo "🔧 Building and starting backend..."

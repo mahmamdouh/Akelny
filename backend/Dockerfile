@@ -5,15 +5,15 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
-COPY ../shared/package*.json ../shared/
+COPY backend/package*.json ./
+COPY shared/package*.json ./shared/
 
 # Install dependencies
 RUN npm ci --only=production && npm cache clean --force
 
 # Copy source code
-COPY . .
-COPY ../shared ../shared
+COPY backend/ ./
+COPY shared/ ./shared/
 
 # Build the application
 RUN npm run build
