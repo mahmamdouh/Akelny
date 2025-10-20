@@ -206,8 +206,12 @@ export class CommunityController {
         reporter: row.reporter_name ? {
           id: row.reported_by_user_id,
           name: row.reporter_name,
-          // Other user fields would be populated if needed
-        } as Partial<any> : undefined
+          email: '',
+          country: '',
+          language: 'en' as 'en' | 'ar',
+          created_at: '',
+          updated_at: ''
+        } : undefined
       }));
 
       res.json({ reports, total: reports.length, limit, offset });

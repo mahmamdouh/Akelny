@@ -72,7 +72,7 @@ export class MealsController {
 
       // Insert meal ingredients with nutrition calculations
       for (const ingredientData of mealData.ingredients) {
-        const nutritionContribution = await nutritionService.calculateIngredientNutrition(
+        const nutritionContribution = await NutritionService.calculateIngredientNutrition(
           ingredientData.ingredient_id,
           ingredientData.quantity,
           ingredientData.unit
@@ -244,7 +244,7 @@ export class MealsController {
 
         // Insert new ingredients
         for (const ingredientData of updateData.ingredients) {
-          const nutritionContribution = await nutritionService.calculateIngredientNutrition(
+          const nutritionContribution = await NutritionService.calculateIngredientNutrition(
             ingredientData.ingredient_id,
             ingredientData.quantity,
             ingredientData.unit
