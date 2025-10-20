@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { MealsController } from '../controllers/meals';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 import multer from 'multer';
 import path from 'path';
 
@@ -45,7 +45,7 @@ router.put('/:id', authenticateToken, MealsController.updateMeal);
 router.delete('/:id', authenticateToken, MealsController.deleteMeal);
 
 // Image upload route
-router.post('/:id/image', authenticateToken, upload.single('image'), async (req, res) => {
+router.post('/:id/image', authenticateToken, upload.single('image'), async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No image file provided' });
