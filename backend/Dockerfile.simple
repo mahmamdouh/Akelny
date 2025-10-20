@@ -1,0 +1,39 @@
+# Simple Dockerfile for Akelny Backend (no build step)
+FROM node:18-alpine
+
+# Install system dependencies
+RUN apk add --no-cache dumb-init curl
+
+# Create app user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY backend/package*.json ./
+
+# Install dependencies
+RUN npm install && npm cache clean --force
+
+# Copy source code directly (no build step)
+COPY backend/src ./src
+COPY backend/tsconfig.json ./tsconfig.json
+
+# Create necessary directories
+RUN mkdir -p logs uploads && chown -R nodejs:nodejs logs uploads
+
+# Switch to non-root user
+USER nodejs
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+# Start the application with ts-node (no build required)
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["npx", "ts-node", "src/index.ts"]
