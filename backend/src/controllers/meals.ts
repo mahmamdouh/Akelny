@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthenticatedRequest } from '../middleware/auth';
 import { pool } from '../config/database';
 import { 
   Meal, 
@@ -12,7 +13,7 @@ import { NutritionService } from '../services/nutritionService';
 
 export class MealsController {
   // Create a new meal
-  static async createMeal(req: Request, res: Response): Promise<void> {
+  static async createMeal(req: AuthenticatedRequest, res: Response): Promise<void> {
     const client = await pool.connect();
     
     try {
@@ -148,7 +149,7 @@ export class MealsController {
   }
 
   // Update meal
-  static async updateMeal(req: Request, res: Response): Promise<void> {
+  static async updateMeal(req: AuthenticatedRequest, res: Response): Promise<void> {
     const client = await pool.connect();
     
     try {
@@ -298,7 +299,7 @@ export class MealsController {
   }
 
   // Delete meal
-  static async deleteMeal(req: Request, res: Response): Promise<void> {
+  static async deleteMeal(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const userId = req.user?.id;

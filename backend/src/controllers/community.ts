@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
+import { AuthenticatedRequest } from '../middleware/auth';
 import { pool } from '../config/database';
-import { 
+import {
   CommunityMealFilters,
   CommunityMealListResponse,
   MealReport,
@@ -13,7 +14,7 @@ import { ModerationService } from '../services/moderationService';
 
 export class CommunityController {
   // Get community meals (public and approved)
-  static async getCommunityMeals(req: Request, res: Response): Promise<void> {
+  static async getCommunityMeals(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
       const filters: CommunityMealFilters = {
@@ -36,7 +37,7 @@ export class CommunityController {
   }
 
   // Publish a recipe to the community
-  static async publishRecipe(req: Request, res: Response): Promise<void> {
+  static async publishRecipe(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
@@ -81,7 +82,7 @@ export class CommunityController {
   }
 
   // Report a meal
-  static async reportMeal(req: Request, res: Response): Promise<void> {
+  static async reportMeal(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
@@ -147,7 +148,7 @@ export class CommunityController {
   }
 
   // Get reports (admin only)
-  static async getReports(req: Request, res: Response): Promise<void> {
+  static async getReports(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
@@ -217,7 +218,7 @@ export class CommunityController {
   }
 
   // Moderate a meal (admin only)
-  static async moderateMeal(req: Request, res: Response): Promise<void> {
+  static async moderateMeal(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
@@ -310,7 +311,7 @@ export class CommunityController {
   }
 
   // Get moderation queue (admin only)
-  static async getModerationQueue(req: Request, res: Response): Promise<void> {
+  static async getModerationQueue(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
@@ -332,7 +333,7 @@ export class CommunityController {
   }
 
   // Get reports for a specific meal (admin only)
-  static async getMealReports(req: Request, res: Response): Promise<void> {
+  static async getMealReports(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
@@ -352,7 +353,7 @@ export class CommunityController {
   }
 
   // Get moderation statistics (admin only)
-  static async getModerationStats(req: Request, res: Response): Promise<void> {
+  static async getModerationStats(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
@@ -371,7 +372,7 @@ export class CommunityController {
   }
 
   // Update report status (admin only)
-  static async updateReportStatus(req: Request, res: Response): Promise<void> {
+  static async updateReportStatus(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
       if (!userId) {
@@ -402,7 +403,7 @@ export class CommunityController {
 
   // Helper method to get community meals with filters
   private static async getCommunityMealsWithFilters(
-    filters: CommunityMealFilters, 
+    filters: CommunityMealFilters,
     userId?: string
   ): Promise<CommunityMealListResponse> {
     try {
@@ -492,7 +493,7 @@ export class CommunityController {
         ORDER BY m.created_at DESC
         LIMIT $${paramCount++} OFFSET $${paramCount++}
       `;
-      
+
       queryParams.push(filters.limit || 20);
       queryParams.push(filters.offset || 0);
 
