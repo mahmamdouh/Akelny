@@ -8,7 +8,7 @@ import {
   MealListResponse,
   MealIngredient 
 } from '../../../shared/src/types/meal';
-import { nutritionService } from '../services/nutritionService';
+import { NutritionService } from '../services/nutritionService';
 
 export class MealsController {
   // Create a new meal
@@ -38,7 +38,7 @@ export class MealsController {
       }
 
       // Calculate nutrition totals
-      const nutritionTotals = await nutritionService.calculateMealNutrition(mealData.ingredients);
+      const nutritionTotals = await NutritionService.calculateSimpleMealNutrition(mealData.ingredients);
 
       // Insert meal
       const mealResult = await client.query(`
@@ -266,7 +266,7 @@ export class MealsController {
         }
 
         // Recalculate nutrition totals
-        const nutritionTotals = await nutritionService.calculateMealNutrition(updateData.ingredients);
+        const nutritionTotals = await NutritionService.calculateSimpleMealNutrition(updateData.ingredients);
         updateFields.push(`nutrition_totals = $${paramCount++}`);
         updateValues.push(JSON.stringify(nutritionTotals));
       }

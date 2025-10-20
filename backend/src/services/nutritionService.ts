@@ -92,7 +92,7 @@ export class NutritionService {
   /**
    * Calculate total nutrition for a meal (simplified interface for meal controller)
    */
-  static async calculateMealNutrition(
+  static async calculateSimpleMealNutrition(
     ingredients: Array<{ ingredient_id: string; quantity: number; unit: string }>
   ): Promise<{ calories: number; protein: number; carbs: number; fat: number; minerals?: Record<string, number> }> {
     try {
