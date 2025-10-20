@@ -5,21 +5,21 @@
 
 echo "🔧 Fixing deployment issues..."
 
-# Stop any running containers
-echo "🛑 Stopping existing containers..."
-docker-compose down 2>/dev/null || true
+# Stop only Akelny containers (not all containers)
+echo "🛑 Stopping existing Akelny containers..."
+docker-compose -p akelny down 2>/dev/null || true
 
-# Clean up any orphaned containers
-echo "🧹 Cleaning up orphaned containers..."
-docker container prune -f 2>/dev/null || true
+# Clean up only Akelny orphaned containers
+echo "🧹 Cleaning up Akelny orphaned containers..."
+docker container ls -a --filter "name=akelny" --format "{{.ID}}" | xargs -r docker container rm -f 2>/dev/null || true
 
-# Remove any existing volumes (WARNING: This will delete data)
-read -p "Do you want to remove existing volumes? This will delete all data (y/N): " -n 1 -r
+# Remove only Akelny volumes (WARNING: This will delete Akelny data)
+read -p "Do you want to remove existing Akelny volumes? This will delete all Akelny data (y/N): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "🗑️  Removing existing volumes..."
-    docker-compose down -v 2>/dev/null || true
-    docker volume prune -f 2>/dev/null || true
+    echo "🗑️  Removing existing Akelny volumes..."
+    docker-compose -p akelny down -v 2>/dev/null || true
+    docker volume ls --filter "name=akelny" --format "{{.Name}}" | xargs -r docker volume rm 2>/dev/null || true
 fi
 
 # Create necessary directories
@@ -145,11 +145,11 @@ echo "✅ Docker and Docker Compose are available"
 
 # Build images without cache to ensure clean build
 echo "🏗️  Building images from scratch..."
-docker-compose build --no-cache backend
+docker-compose -p akelny build --no-cache backend
 
 # Test if we can start the database
 echo "🗄️  Testing database startup..."
-docker-compose up -d postgres redis
+docker-compose -p akelny up -d postgres redis
 
 # Wait for database to be ready
 echo "⏳ Waiting for database to be ready..."
@@ -157,31 +157,31 @@ sleep 30
 
 # Test database connection
 echo "🔍 Testing database connection..."
-if docker-compose exec -T postgres pg_isready -U akelny_user -d akelny; then
+if docker-compose -p akelny exec -T postgres pg_isready -U akelny_user -d akelny; then
     echo "✅ Database is ready"
 else
     echo "❌ Database is not ready, checking logs..."
-    docker-compose logs postgres
+    docker-compose -p akelny logs postgres
 fi
 
 # Run migrations manually
 echo "🗄️  Running database migrations..."
-docker-compose exec -T postgres psql -U akelny_user -d akelny -c "SELECT version();" || echo "Database connection failed"
+docker-compose -p akelny exec -T postgres psql -U akelny_user -d akelny -c "SELECT version();" || echo "Database connection failed"
 
 # Check if migration files exist and run them
 if [ -f "backend/src/migrations/001_create_core_tables.sql" ]; then
     echo "Running core tables migration..."
-    docker-compose exec -T postgres psql -U akelny_user -d akelny -f /docker-entrypoint-initdb.d/001_create_core_tables.sql || echo "Core tables migration failed"
+    docker-compose -p akelny exec -T postgres psql -U akelny_user -d akelny -f /docker-entrypoint-initdb.d/001_create_core_tables.sql || echo "Core tables migration failed"
 fi
 
 if [ -f "backend/src/migrations/002_create_indexes.sql" ]; then
     echo "Running indexes migration..."
-    docker-compose exec -T postgres psql -U akelny_user -d akelny -f /docker-entrypoint-initdb.d/002_create_indexes.sql || echo "Indexes migration failed"
+    docker-compose -p akelny exec -T postgres psql -U akelny_user -d akelny -f /docker-entrypoint-initdb.d/002_create_indexes.sql || echo "Indexes migration failed"
 fi
 
 # Stop services
 echo "🛑 Stopping test services..."
-docker-compose down
+docker-compose -p akelny down
 
 echo ""
 echo "🎉 Deployment issues have been fixed!"
@@ -193,8 +193,8 @@ echo "   ✅ Removed obsolete Docker Compose version"
 echo "   ✅ Created necessary directories and permissions"
 echo "   ✅ Created minimal shared directory structure"
 echo ""
-echo "🚀 You can now run the deployment:"
-echo "   ./scripts/deploy.sh"
+echo "🚀 You can now run the safe deployment:"
+echo "   ./scripts/safe-deploy.sh"
 echo ""
 echo "🔍 If you still encounter issues:"
 echo "   1. Check Docker logs: docker-compose logs [service]"
