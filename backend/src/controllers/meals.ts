@@ -1,14 +1,83 @@
 import { Request, Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { pool } from '../config/database';
-import { 
-  Meal, 
-  CreateMealRequest, 
-  UpdateMealRequest, 
-  MealFilters,
-  MealListResponse,
-  MealIngredient 
-} from '../../../shared/src/types/meal';
+// Temporary inline types to fix Docker build
+interface Meal {
+  id: string;
+  title_en: string;
+  title_ar?: string;
+  description_en?: string;
+  description_ar?: string;
+  kitchen_id: string;
+  meal_type: 'breakfast' | 'lunch' | 'dinner';
+  servings: number;
+  prep_time_min?: number;
+  cook_time_min?: number;
+  difficulty: 'easy' | 'medium' | 'hard';
+  image_url?: string;
+  nutrition_totals?: any;
+  created_by_user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CreateMealRequest {
+  title_en: string;
+  title_ar?: string;
+  description_en?: string;
+  description_ar?: string;
+  kitchen_id: string;
+  meal_type: 'breakfast' | 'lunch' | 'dinner';
+  servings: number;
+  prep_time_min?: number;
+  cook_time_min?: number;
+  difficulty: 'easy' | 'medium' | 'hard';
+  ingredients: any[];
+  instructions_en: string[];
+  instructions_ar?: string[];
+}
+
+interface UpdateMealRequest {
+  title_en?: string;
+  title_ar?: string;
+  description_en?: string;
+  description_ar?: string;
+  kitchen_id?: string;
+  meal_type?: 'breakfast' | 'lunch' | 'dinner';
+  servings?: number;
+  prep_time_min?: number;
+  cook_time_min?: number;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  ingredients?: any[];
+  instructions_en?: string[];
+  instructions_ar?: string[];
+}
+
+interface MealFilters {
+  kitchen_id?: string;
+  meal_type?: 'breakfast' | 'lunch' | 'dinner';
+  difficulty?: 'easy' | 'medium' | 'hard';
+  max_prep_time?: number;
+  max_cook_time?: number;
+  search?: string;
+}
+
+interface MealListResponse {
+  meals: Meal[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+interface MealIngredient {
+  id: string;
+  meal_id: string;
+  ingredient_id: string;
+  quantity: number;
+  unit: string;
+  status: 'mandatory' | 'recommended' | 'optional';
+  nutrition_contribution?: any;
+}
 import { NutritionService } from '../services/nutritionService';
 
 export class MealsController {

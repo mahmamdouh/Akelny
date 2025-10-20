@@ -1,15 +1,75 @@
 import { Request, Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { pool } from '../config/database';
-import {
-  CommunityMealFilters,
-  CommunityMealListResponse,
-  MealReport,
-  CreateMealReportRequest,
-  ModerationAction,
-  PublishRecipeRequest,
-  Meal
-} from '../../../shared/src/types/meal';
+// Temporary inline types to fix Docker build
+interface Meal {
+  id: string;
+  title_en: string;
+  title_ar?: string;
+  description_en?: string;
+  description_ar?: string;
+  kitchen_id: string;
+  meal_type: 'breakfast' | 'lunch' | 'dinner';
+  servings: number;
+  image_url?: string;
+  created_by_user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  country: string;
+  language: 'en' | 'ar';
+  created_at: string;
+  updated_at: string;
+}
+
+interface CommunityMealFilters {
+  kitchen_id?: string;
+  meal_type?: 'breakfast' | 'lunch' | 'dinner';
+  difficulty?: 'easy' | 'medium' | 'hard';
+  search?: string;
+  created_by?: string;
+}
+
+interface CommunityMealListResponse {
+  meals: Meal[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+interface MealReport {
+  id: string;
+  meal_id: string;
+  reported_by_user_id: string;
+  reason: string;
+  description?: string;
+  status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+  created_at: string;
+  updated_at: string;
+  meal?: Meal;
+  reporter?: User;
+}
+
+interface CreateMealReportRequest {
+  meal_id: string;
+  reason: string;
+  description?: string;
+}
+
+interface ModerationAction {
+  action: 'approve' | 'reject' | 'flag';
+  reason?: string;
+}
+
+interface PublishRecipeRequest {
+  meal_id: string;
+  visibility: 'public' | 'community' | 'private';
+}
 import { ModerationService } from '../services/moderationService';
 
 export class CommunityController {
