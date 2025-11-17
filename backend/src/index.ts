@@ -192,8 +192,13 @@ const startServer = async () => {
     
     // Test database connection
     logger.info('Connecting to database...');
-    await testConnection();
-    logger.info('✅ Database connection established');
+    const dbConnected = await testConnection();
+    if (dbConnected) {
+      logger.info('✅ Database connection established');
+    } else {
+      logger.error('❌ Database connection failed');
+      throw new Error('Database connection failed');
+    }
     
     // Connect to Redis
     logger.info('Connecting to Redis...');
@@ -206,10 +211,17 @@ const startServer = async () => {
     
     // Initialize auth service
     logger.info('Initializing authentication service...');
-    await AuthService.initialize();
-    logger.info('✅ Authentication service initialized');
+    try {
+      await AuthService.initialize();
+      logger.info('✅ AuthService initialized');
+    } catch (error) {
+      logger.error('❌ AuthService initialization failed', { error });
+      throw error;
+    }
     
     // Start server
+    logger.info('Starting Express server...');
+    console.log('🔧 About to call app.listen on port', PORT);
     const server = app.listen(Number(PORT), process.env.HOST || '0.0.0.0', () => {
       logger.info('🚀 Server started successfully', {
         port: PORT,
