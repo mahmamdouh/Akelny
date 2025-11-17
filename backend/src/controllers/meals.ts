@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { pool } from '../config/database';
-// Temporary inline types to fix Docker build
+// Complete inline types to fix Docker build
 interface Meal {
   id: string;
   title_en: string;
@@ -13,12 +13,19 @@ interface Meal {
   servings: number;
   prep_time_min?: number;
   cook_time_min?: number;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty?: 'easy' | 'medium' | 'hard';
+  steps_en?: any;
+  steps_ar?: any;
   image_url?: string;
   nutrition_totals?: any;
   created_by_user_id: string;
+  is_public?: boolean;
+  is_approved?: boolean;
   created_at: string;
   updated_at: string;
+  kitchen?: any;
+  creator?: any;
+  ingredients?: any;
 }
 
 interface CreateMealRequest {
@@ -32,8 +39,12 @@ interface CreateMealRequest {
   prep_time_min?: number;
   cook_time_min?: number;
   difficulty: 'easy' | 'medium' | 'hard';
+  steps_en?: any;
+  steps_ar?: any;
+  image_url?: string;
+  is_public?: boolean;
   ingredients: any[];
-  instructions_en: string[];
+  instructions_en?: string[];
   instructions_ar?: string[];
 }
 
@@ -48,6 +59,10 @@ interface UpdateMealRequest {
   prep_time_min?: number;
   cook_time_min?: number;
   difficulty?: 'easy' | 'medium' | 'hard';
+  steps_en?: any;
+  steps_ar?: any;
+  image_url?: string;
+  is_public?: boolean;
   ingredients?: any[];
   instructions_en?: string[];
   instructions_ar?: string[];
@@ -55,18 +70,24 @@ interface UpdateMealRequest {
 
 interface MealFilters {
   kitchen_id?: string;
+  kitchen_ids?: string[];
   meal_type?: 'breakfast' | 'lunch' | 'dinner';
   difficulty?: 'easy' | 'medium' | 'hard';
   max_prep_time?: number;
   max_cook_time?: number;
   search?: string;
+  is_public?: boolean;
+  created_by_user_id?: string;
+  limit?: number;
+  offset?: number;
 }
 
 interface MealListResponse {
   meals: Meal[];
   total: number;
-  page: number;
+  page?: number;
   limit: number;
+  offset?: number;
 }
 
 interface MealIngredient {

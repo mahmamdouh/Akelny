@@ -29,17 +29,24 @@ interface User {
 
 interface CommunityMealFilters {
   kitchen_id?: string;
+  kitchen_ids?: string[];
   meal_type?: 'breakfast' | 'lunch' | 'dinner';
   difficulty?: 'easy' | 'medium' | 'hard';
   search?: string;
   created_by?: string;
+  is_approved?: boolean;
+  is_public?: boolean;
+  reported?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
 interface CommunityMealListResponse {
   meals: Meal[];
   total: number;
-  page: number;
+  page?: number;
   limit: number;
+  offset?: number;
 }
 
 interface MealReport {
@@ -69,6 +76,7 @@ interface ModerationAction {
 interface PublishRecipeRequest {
   meal_id: string;
   visibility: 'public' | 'community' | 'private';
+  is_public?: boolean;
 }
 import { ModerationService } from '../services/moderationService';
 
