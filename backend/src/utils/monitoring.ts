@@ -132,10 +132,11 @@ class MonitoringService {
       : 0;
 
     // Get database health
-    let databaseHealth = { healthy: false, connections: {}, queryMetrics: {} };
+    let databaseHealth: any = { healthy: false, connections: {}, metrics: {}, queryMetrics: {} };
     if (dbPool) {
       try {
-        databaseHealth = await checkDatabaseHealth(dbPool);
+        const dbHealth = await checkDatabaseHealth(dbPool);
+        databaseHealth = { ...dbHealth, queryMetrics: dbHealth.metrics || {} };
       } catch (error) {
         logger.error('Failed to get database health', { error });
       }
@@ -257,12 +258,12 @@ export const monitoringMiddleware = (req: Request, res: Response, next: any) => 
   const startTime = Date.now();
   
   // Override res.end to record metrics
-  const originalEnd = res.end;
-  res.end = function(chunk: any, encoding: any) {
+  const originalEnd = res.end.bind(res);
+  res.end = function(...args: any[]) {
     const responseTime = Date.now() - startTime;
     monitoring.recordRequest(responseTime, res.statusCode);
-    originalEnd.call(res, chunk, encoding);
-  };
+    return originalEnd(...args);
+  } as any;
 
   next();
 };

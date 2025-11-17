@@ -447,13 +447,13 @@ export const endpointTrackingMiddleware = (req: Request, res: Response, next: an
   const startTime = Date.now();
   
   // Override res.end to record metrics
-  const originalEnd = res.end;
-  res.end = function(chunk: any, encoding: any) {
+  const originalEnd = res.end.bind(res);
+  res.end = function(...args: any[]) {
     const responseTime = Date.now() - startTime;
     const endpoint = `${req.method} ${req.route?.path || req.path}`;
     performanceDashboard.recordEndpoint(endpoint, responseTime);
-    originalEnd.call(res, chunk, encoding);
-  };
+    return originalEnd(...args);
+  } as any;
 
   next();
 };

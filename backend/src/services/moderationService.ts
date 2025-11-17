@@ -1,5 +1,21 @@
 import { pool } from '../config/database';
-import { MealReport, ModerationAction } from '../../../shared/src/types/meal';
+
+// Inline types to fix Docker build
+interface MealReport {
+  id: string;
+  meal_id: string;
+  reported_by_user_id: string;
+  reason: string;
+  description?: string;
+  status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+  created_at: string;
+  updated_at: string;
+}
+
+interface ModerationAction {
+  action: 'approve' | 'reject' | 'flag';
+  reason?: string;
+}
 
 export class ModerationService {
   // Get moderation queue (meals that need review)

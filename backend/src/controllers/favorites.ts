@@ -1,12 +1,36 @@
 import { Request, Response } from 'express';
 import { pool } from '../config/database';
 import { AuthenticatedRequest } from '../middleware/auth';
-import { 
-  UserFavorite, 
-  AddFavoriteRequest, 
-  FavoritesFilters,
-  FavoritesListResponse 
-} from '../../../shared/src/types/favorites';
+
+// Inline types to fix Docker build
+interface UserFavorite {
+  id?: string;
+  user_id: string;
+  meal_id: string;
+  created_at?: string;
+  added_at?: string;
+  meal?: any;
+}
+
+interface AddFavoriteRequest {
+  meal_id: string;
+}
+
+interface FavoritesFilters {
+  meal_type?: 'breakfast' | 'lunch' | 'dinner';
+  kitchen_id?: string;
+  kitchen_ids?: string[] | string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+interface FavoritesListResponse {
+  favorites: UserFavorite[];
+  total: number;
+  limit?: number;
+  offset?: number;
+}
 
 export class FavoritesController {
   // Add a meal to favorites
@@ -136,7 +160,7 @@ export class FavoritesController {
       }
 
       if (kitchen_ids && kitchen_ids.length > 0) {
-        const kitchenIdsArray = Array.isArray(kitchen_ids) ? kitchen_ids : kitchen_ids.split(',');
+        const kitchenIdsArray = Array.isArray(kitchen_ids) ? kitchen_ids : (typeof kitchen_ids === 'string' ? kitchen_ids.split(',') : []);
         query += ` AND m.kitchen_id = ANY($${paramIndex})`;
         queryParams.push(kitchenIdsArray);
         paramIndex++;

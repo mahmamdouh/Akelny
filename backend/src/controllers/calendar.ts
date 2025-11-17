@@ -1,13 +1,53 @@
 import { Request, Response } from 'express';
 import { pool } from '../config/database';
 import { AuthenticatedRequest } from '../middleware/auth';
-import { 
-  CalendarEntry, 
-  CreateCalendarEntryRequest, 
-  UpdateCalendarEntryRequest,
-  CalendarFilters,
-  CalendarListResponse 
-} from '../../../shared/src/types/calendar';
+
+// Inline types to fix Docker build
+interface CalendarEntry {
+  id?: string;
+  user_id: string;
+  meal_id: string;
+  planned_date?: string;
+  scheduled_date?: string;
+  meal_type?: 'breakfast' | 'lunch' | 'dinner';
+  servings?: number;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+  meal?: any;
+}
+
+interface CreateCalendarEntryRequest {
+  meal_id: string;
+  planned_date?: string;
+  scheduled_date?: string;
+  meal_type?: 'breakfast' | 'lunch' | 'dinner';
+  servings?: number;
+  notes?: string;
+}
+
+interface UpdateCalendarEntryRequest {
+  planned_date?: string;
+  scheduled_date?: string;
+  meal_type?: 'breakfast' | 'lunch' | 'dinner';
+  servings?: number;
+  notes?: string;
+}
+
+interface CalendarFilters {
+  start_date?: string;
+  end_date?: string;
+  meal_type?: 'breakfast' | 'lunch' | 'dinner';
+  limit?: number;
+  offset?: number;
+}
+
+interface CalendarListResponse {
+  entries: CalendarEntry[];
+  total: number;
+  limit?: number;
+  offset?: number;
+}
 
 export class CalendarController {
   // Create a new calendar entry
